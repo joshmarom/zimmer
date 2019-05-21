@@ -67,7 +67,7 @@ class Plugin {
 	 * @access private
 	 */
 	private function include_widgets_files() {
-		require_once( __DIR__ . '/widgets/hello-world.php' );
+		require_once __DIR__ . '/widgets/hello-world.php';
 		require_once __DIR__ . '/widgets/posts-gallery.php';
 	}
 
