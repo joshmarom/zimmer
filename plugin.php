@@ -1,6 +1,8 @@
 <?php
 namespace WhiteZimmer;
 
+use Elementor\Controls_Manager;
+
 /**
  * Class Plugin
  *
@@ -45,11 +47,10 @@ class Plugin {
 	 * @since 1.0
 	 * @access public
 	 */
-	/*
+
 	public function widget_scripts() {
-		wp_register_script( 'elementor-hello-world', plugins_url( '/assets/js/hello-world.js', __FILE__ ), [ 'jquery' ], false, true );
+		wp_register_script( 'zimmer-handler', plugins_url( '/assets/js/hello-world.js', __FILE__ ), [ 'jquery' ], false, true );
 	}
-	*/
 
 	/**
 	 * Include Widgets files
@@ -68,15 +69,19 @@ class Plugin {
 	 *
 	 * Register new Elementor widgets.
 	 *
-	 * @since 1.0
+	 * @since  1.0
 	 * @access public
+	 *
+	 * @param \Elementor\Widgets_Manager $widgets_manager
+	 *
+	 * @throws \Exception
 	 */
-	public function register_widgets() {
+	public function register_widgets( $widgets_manager ) {
 		// Its is now safe to include Widgets files
 		$this->include_widgets_files();
 
 		// Register Widgets
-		\Elementor\Plugin::instance()->widgets_manager->register_widget_type( new Widgets\Hello_World() );
+		$widgets_manager->register_widget_type( new Widgets\Alt_Heading() );
 	}
 
 	public function register_taxonomies() {
@@ -93,6 +98,23 @@ class Plugin {
 		}
 	}
 
+	public function change_rating_widget( $control_stack ) {
+		// Update the control
+		$control_stack->update_control( 'rating', [
+			'type' => Controls_Manager::TEXT,
+			'dynamic' => [
+				'active' => true,
+			],
+		]
+
+		 , [
+			'recursive' => true, // To update an array by merging
+		]
+
+
+		);
+	}
+
 	/**
 	 *  Plugin class constructor
 	 *
@@ -102,7 +124,6 @@ class Plugin {
 	 * @access public
 	 */
 	public function __construct() {
-
 		// Register widget scripts
 		// add_action( 'elementor/frontend/after_register_scripts', [ $this, 'widget_scripts' ] );
 
@@ -113,6 +134,54 @@ class Plugin {
 
 		add_action( 'init', [ $this, 'register_taxonomies' ], 0 );
 
+		add_action( 'elementor/element/star-rating/section_rating/before_section_end', [ $this, 'change_rating_widget' ], 10, 2 );
+
+		//add_filter( 'elementor/widget/render_content',
+
+			/**
+			 * @param string $widget_content
+			 * @param \Elementor\Widget_Base $widget
+			 *//*
+			function ( $widget_content, $widget ) {
+				if ( 'heading' !== $widget->get_name() ) {
+					return $widget_content;
+				}
+
+				$settings = $widget->get_settings_for_display();
+
+				$widget->add_render_attribute( 'heading', 'class', 'cool-heading' );
+
+				$widget_content = '<' . $settings['html_tag'] . $widget->get_render_attribute_string( 'heading' ) . '>';
+				$widget_content .= $settings['title'];
+				$widget_content .= '</' . $settings['html_tag'] . '>';
+
+			return $widget_content;
+
+		}, 10, 2 );
+
+		*/
+
+
+		add_filter( 'elementor/frontend/widget/should_render', function( $should_render, $widget ) {
+			// check if current widget is our desired widget, in this example we use login widget
+			if ( 'login' !== $widget->get_name() ) {
+				return $should_render;
+			}
+			// If we got here then its our widget so check if te user is logged in and if he is
+			// then we want to stop the render so we return false
+			return ! is_user_logged_in();
+		}, 10, 2 );
+
+
+		// render for logged in users only
+		add_filter( 'elementor/frontend/widget/should_render', function( $should_render, $widget ) {
+			// check if current widget is our desired widget, in this example we use form widget
+			if ( 'form' !== $widget->get_name() ) {
+				return $should_render;
+			}
+			// If we got here then its our widget so check if te user is logged in
+			return is_user_logged_in();
+		}, 10, 2 );
 	}
 }
 
