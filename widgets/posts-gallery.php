@@ -13,7 +13,7 @@ class Posts_Gallery extends Posts {
 	}
 
 	public function get_title() {
-		return __( 'Posts Gallery', 'elementor-pro' );
+		return __( 'Posts Gallery', 'zimmer' );
 	}
 
 	public function get_keywords() {
