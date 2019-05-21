@@ -48,8 +48,14 @@ class Plugin {
 	 * @access public
 	 */
 
-	public function widget_scripts() {
-		wp_register_script( 'zimmer-handler', plugins_url( '/assets/js/hello-world.js', __FILE__ ), [ 'jquery' ], false, true );
+	public function widget_assets() {
+		wp_register_script( 'jquery-mosaic', plugins_url( '/assets/js/lib/jquery-mosaic/jquery.mosaic.js', __FILE__ ), [ 'jquery' ], '0.15.3', true );
+		wp_register_style( 'jquery-mosaic', plugins_url( '/assets/js/lib/jquery-mosaic/jquery.mosaic.css', __FILE__ ), [], '0.15.3' );
+
+		if ( \Elementor\Plugin::$instance->preview->is_preview_mode() ) {
+			wp_enqueue_style( 'jquery-mosaic' );
+		}
+		wp_register_script( 'posts-gallery', plugins_url( '/assets/js/frontend/posts-gallery.js', __FILE__ ), [ 'jquery-mosaic' ], \Elementor_White_Zimmer::VERSION, true );
 	}
 
 	/**
@@ -62,6 +68,7 @@ class Plugin {
 	 */
 	private function include_widgets_files() {
 		require_once( __DIR__ . '/widgets/hello-world.php' );
+		require_once __DIR__ . '/widgets/posts-gallery.php';
 	}
 
 	/**
@@ -82,6 +89,7 @@ class Plugin {
 
 		// Register Widgets
 		$widgets_manager->register_widget_type( new Widgets\Alt_Heading() );
+		$widgets_manager->register_widget_type( new Widgets\Posts_Gallery() );
 	}
 
 	public function register_taxonomies() {
@@ -125,7 +133,7 @@ class Plugin {
 	 */
 	public function __construct() {
 		// Register widget scripts
-		// add_action( 'elementor/frontend/after_register_scripts', [ $this, 'widget_scripts' ] );
+		 add_action( 'elementor/frontend/after_register_scripts', [ $this, 'widget_assets' ] );
 
 		// Register widgets
 		add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_widgets' ] );
