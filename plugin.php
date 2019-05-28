@@ -2,6 +2,9 @@
 namespace WhiteZimmer;
 
 use Elementor\Controls_Manager;
+use ElementorPro\Modules\Forms\Module;
+use WhiteZimmer\Integrations\Zimmer_Review;
+use WhiteZimmer\Tags\Tag_Coupon;
 
 /**
  * Class Plugin
@@ -123,6 +126,20 @@ class Plugin {
 		);
 	}
 
+	public function register_tags( $tag_manager ) {
+		require __DIR__ . '/tags/tag-coupon.php';
+		$tag_manager->register_tag( new Tag_Coupon() );
+	}
+
+	public function register_form_integrations() {
+		require __DIR__ . '/integrations/zimmer-review.php';
+
+		/** @var Module $forms */
+		$forms = \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'forms' );
+		$forms->add_form_action( 'zimmer_review', new Zimmer_Review() );
+	}
+
+
 	/**
 	 *  Plugin class constructor
 	 *
@@ -132,6 +149,8 @@ class Plugin {
 	 * @access public
 	 */
 	public function __construct() {
+		add_action( 'elementor_pro/init', [ $this, 'register_form_integrations' ] );
+
 		// Register widget scripts
 		 add_action( 'elementor/frontend/after_register_scripts', [ $this, 'widget_assets' ] );
 
@@ -141,6 +160,8 @@ class Plugin {
 		add_action( 'init', [ $this, 'register_post_types' ], 0 );
 
 		add_action( 'init', [ $this, 'register_taxonomies' ], 0 );
+
+		add_action( 'elementor/dynamic_tags/register_tags', [ $this, 'register_tags' ] );
 
 		add_action( 'elementor/element/star-rating/section_rating/before_section_end', [ $this, 'change_rating_widget' ], 10, 2 );
 
